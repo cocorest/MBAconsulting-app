@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBA Expert Council</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&family=Playfair+Display:wght@700;900&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{height:100vh;display:flex;flex-direction:column;background:linear-gradient(160deg,#060608 0%,#0C0C14 60%,#08080D 100%);font-family:'Noto Sans JP','Hiragino Sans',sans-serif;color:#E0E0E0;overflow:hidden}
+  ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#222;border-radius:3px}
+  #header{border-bottom:1px solid rgba(255,255,255,.055);padding:.85rem 1.1rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.4);backdrop-filter:blur(14px);flex-shrink:0;gap:.5rem}
+  #header-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:900;background:linear-gradient(120deg,#FFD700,#FFA500,#FF6B35);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  #header-sub{font-size:.6rem;color:#444;margin-top:.05rem;letter-spacing:.05em}
+  #header-btns{display:flex;gap:.4rem;flex-shrink:0}
+  .gb{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);color:#888;padding:.36rem .85rem;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit;transition:all .17s;white-space:nowrap}
+  .gb:hover{background:rgba(255,255,255,.09);color:#bbb}
+  #main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+  #selector{flex:1;overflow-y:auto;padding:1.1rem .85rem 2rem}
+  #selector-title{text-align:center;color:#EEE;font-size:1.84rem;margin-bottom:1.8rem;letter-spacing:.02em;font-weight:700;font-family:'Noto Serif JP',serif;line-height:1.5}
+  #expert-grid{max-width:860px;margin:0 auto}
+  .phase-section{margin-bottom:1.4rem}
+  .phase-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem}
+  .phase-line{height:1px;flex:1}
+  .phase-label{font-size:1.44rem;font-weight:700;letter-spacing:.06em;padding:.3rem 1rem;border-radius:6px;display:inline-block}
+  .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:.85rem .95rem;cursor:pointer;transition:all .2s ease;position:relative;overflow:hidden;margin-bottom:.6rem}
+  .card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;transform:scaleX(0);transition:transform .25s;transform-origin:left}
+  .card:hover{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.13);transform:translateY(-1px)}
+  .card:hover::after{transform:scaleX(1)}
+  .card-inner{display:flex;gap:.65rem;align-items:flex-start}
+  .card-icon{width:34px;height:34px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+  .card-title{font-size:.9rem;font-weight:700;color:#EEE;line-height:1.25;font-family:'Noto Serif JP',serif;margin-bottom:.2rem}
+  .card-desc{font-size:.78rem;color:#BBB;line-height:1.45}
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem}
+
+  #chat-view{flex:1;overflow:hidden;display:flex;flex-direction:column}
+  #messages{flex:1;overflow-y:auto;padding:.9rem .85rem;display:flex;flex-direction:column;gap:.65rem}
+  #welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:.8rem;padding-bottom:2rem;text-align:center}
+  #welcome-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.7rem}
+  #welcome-title{font-family:'Noto Serif JP',serif;font-size:1rem;font-weight:700;color:#EEE;margin-bottom:.3rem}
+  #welcome-desc{font-size:.78rem;color:#AAA;line-height:1.65;max-width:320px}
+  #welcome-hint{font-size:.68rem;color:#333}
+  .msg-user{display:flex;justify-content:flex-end}
+  .bubble-user{background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.1);border-radius:13px 13px 3px 13px;padding:.65rem .9rem;max-width:80%;font-size:.9rem;line-height:1.65;color:#E5E5E5;word-break:break-word}
+  .msg-ai{display:flex;gap:.45rem;align-items:flex-start}
+  .ai-icon{width:24px;height:24px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.78rem;margin-top:.1rem}
+  .bubble-ai{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);border-radius:3px 13px 13px 13px;padding:.9rem 1rem;max-width:95%;word-break:break-word;font-size:.9rem;line-height:1.75;color:#E0E0E0}
+  .bubble-ai h2{font-size:1rem;font-weight:700;margin-top:1.2rem;margin-bottom:.3rem;font-family:'Noto Serif JP',serif;border-bottom-width:1px;border-bottom-style:solid;padding-bottom:.2rem}
+  .bubble-ai h2:first-child{margin-top:0}
+  .bubble-ai .bullet{display:flex;gap:.4rem;margin-bottom:.22rem}
+  .bubble-ai .bullet-arrow{flex-shrink:0;font-size:.82rem;margin-top:.2rem}
+  .bubble-ai p{margin-bottom:.25rem}
+  .typing{display:flex;align-items:center;gap:2px;padding:.55rem .8rem;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055);border-radius:3px 13px 13px 13px}
+  .dot{display:inline-block;width:5px;height:5px;border-radius:50%;animation:dotanim 1.2s ease infinite;margin:0 1px}
+  @keyframes dotanim{0%,80%,100%{opacity:.2;transform:scale(.7)}40%{opacity:1;transform:scale(1)}}
+  .dot:nth-child(2){animation-delay:.14s}.dot:nth-child(3){animation-delay:.28s}
+  #input-area{border-top:1px solid rgba(255,255,255,.055);padding:.65rem .85rem;background:rgba(0,0,0,.3);flex-shrink:0}
+  #input-counter{font-size:.63rem;color:#888;margin-bottom:.3rem}
+  #input-box{display:flex;gap:.55rem;align-items:flex-end;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:11px;padding:.6rem .7rem}
+  #input-text{flex:1;background:transparent;border:none;color:#DDD;font-size:.9rem;font-family:inherit;resize:none;line-height:1.6;outline:none;max-height:110px;min-height:20px}
+  #send-btn{width:38px;height:38px;border:none;border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .17s;flex-shrink:0;color:#fff}
+  #send-btn:hover:not(:disabled){transform:scale(1.06)}
+  #send-btn:disabled{opacity:.35;cursor:not-allowed}
+  #input-hint{font-size:.58rem;color:#666;margin-top:.28rem}
+  #error-box{background:#1A0505;border:1px solid #E74C3C45;border-radius:8px;padding:.65rem .85rem;color:#E74C3C;font-size:.8rem;word-break:break-all;margin:.5rem .85rem}
+  .hidden{display:none!important}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .28s ease}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <div id="header-title" id="ht">MBA Expert Council</div>
+    <div id="header-sub">ビジネスの課題を世界トップの専門家13名が解決する</div>
+  </div>
+  <div id="header-btns">
+    <button class="gb hidden" id="reset-btn" onclick="resetChat()">リセット</button>
+    <button class="gb hidden" id="back-btn" onclick="showSelector()">← 専門家を変える</button>
+  </div>
+</div>
+
+<div id="main">
+  <div id="selector">
+    <div id="selector-title">ビジネスのどのフェーズで<br>お悩みですか？</div>
+    <div id="expert-grid"></div>
+  </div>
+
+  <div id="chat-view" class="hidden">
+    <div id="messages">
+      <div id="welcome">
+        <div id="welcome-icon"></div>
+        <div>
+          <div id="welcome-title"></div>
+          <div id="welcome-desc"></div>
+        </div>
+        <div id="welcome-hint">↓ 下に状況を入力して相談を始めてください</div>
+      </div>
+    </div>
+    <div id="error-box" class="hidden"></div>
+    <div id="input-area">
+      <div id="input-counter" class="hidden"></div>
+      <div id="input-box">
+        <textarea id="input-text" rows="1" placeholder=""></textarea>
+        <button id="send-btn" onclick="sendMessage()" disabled>↑</button>
+      </div>
+      <div id="input-hint">Enter で送信 · Shift+Enter で改行</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_KEY = "あなたのAPIキーをここに入れる";
+
+const EXPERTS = [
+  {id:"strategy",phase:"戦略・設計",icon:"⚔️",color:"#8B0000",accent:"#FF6B6B",
+   title:"戦略の鬼",
+   desc:"混乱した問題をMECEで即構造化。「何が本当の問題か」を一瞬で見抜く問題解決師",
+   placeholder:"解決したいビジネスの問題や悩みを、どんな形式でも書いてください",
+   system:`あなたはMECE原則とマッキンゼー流の問題解決を駆使する戦略コンサルタントです。複雑で混乱したビジネス問題を、明確で構造化されたイシュツリーに分解し、ポーターの競争戦略フレームワークも活用して、本質的な問題と解決策を特定します。最初の相談では以下の構造で日本語で回答してください：\n\n## 🎯 問題ステートメント\n曖昧さを排除した、明確で具体的な1文\n\n## 🌳 MECEイシュツリー\n**レベル1（大分類）**：問題の100%をカバーする2〜4つのカテゴリ\n**レベル2（中分類）**：各カテゴリの下に2〜4つのサブイシュー\n**レベル3（根本原因）**：最重要イシューの根本原因と調査すべき質問\n\n## 🔍 重複・ギャップチェック\nツリーの重複箇所と見落としを指摘\n\n## 🏆 優先ブランチ\n根本原因や最大の機会が最もありそうなブランチとその理由\n\n## 💡 各ブランチの仮説\n分析で得られるであろう明確な推測\n\n## ⚔️ 競争優位性の視点\nポーターの5つの力を踏まえた戦略的示唆\n\n## 📋 次のアクション\n今すぐ取れる具体的な3つのステップ\n\n続く質問には会話の流れに沿って深く掘り下げてください。`},
+  {id:"scenario",phase:"戦略・設計",icon:"🔮",color:"#1A1A5E",accent:"#7B8CDE",
+   title:"シナリオ・プランニング戦略家",
+   desc:"不確実な未来を複数シナリオで想定し、どの未来が来ても勝てる最善手を導く",
+   placeholder:"直面している不確実性や、将来について悩んでいる意思決定を教えてください",
+   system:`あなたはハーバード・ケネディ・スクールで意思決定科学を教え、シナリオプランニングの第一人者として世界のリーダーに助言する戦略パートナーです。最初の相談では以下の構造で日本語で回答してください：\n\n## 🎯 決定の枠組み\n正確に何を選ぶのか、ステークスは何か\n\n## 🔮 2つの主要な不確実要因\n最も影響力が高く、最も予測困難な2つの要因\n\n## 📊 2×2シナリオマトリックス\n4つの異なるシナリオとそれぞれの名前・ストーリー\n\n## ⚡ 各シナリオの影響\n戦略・商品・価格・運営への具体的な影響\n\n## 🛡 安全策 vs ギャンブル\n複数シナリオで機能する動き vs 1つのシナリオのみに賭ける動き\n\n## 🚨 早期警戒サイン\n今日から監視できる、方向性を示すシグナル\n\n## 📋 30-60-90日アクション\n最初の90日で取るべき具体的な行動\n\n続く質問には会話の流れに沿ってさらに深めてください。`},
+  {id:"innovation",phase:"戦略・設計",icon:"🚀",color:"#1B4D1B",accent:"#5DBB5D",
+   title:"イノベーション・ファイアスターター",
+   desc:"業界の常識を壊して新市場を創る。あなたを「破壊する側」に立たせる革新戦略の専門家",
+   placeholder:"あなたのビジネス、業界、既存企業か挑戦者か、感じているイノベーションの機会や脅威を教えてください",
+   system:`あなたはクレイトン・クリステンセンの破壊的イノベーション理論の第一人者であり、Jobs-to-be-Done理論も駆使して、顧客が本当に求めているものを特定し、新市場創出の道筋を示します。最初の相談では以下の構造で日本語で回答してください：\n\n## 🔍 破壊的変革スキャン\n業界が現在破壊的変革の最中か、これからかの評価\n\n## 🏢 既存企業の脆弱性\n市場リーダーが過剰提供しているものと不足しているもの\n\n## 🔧 Jobs-to-be-Done分析\n顧客が実際に「雇っている仕事」は何か\n\n## 📉 ローエンド破壊の機会\nよりシンプル・安価なバージョンで市場を奪う可能性\n\n## 🚀 新市場創出の機会\n今まで使えなかった人々を顧客にする方法\n\n## 🛡 防御戦略（既存企業の場合）\n破壊から身を守り、自ら変革を起こす方法\n\n## ⚡ 攻撃戦略（挑戦者の場合）\n巨人を打ち負かす具体的なプレイブック\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"insight",phase:"顧客・市場理解",icon:"🧠",color:"#2E4A7A",accent:"#64B5F6",
+   title:"顧客インサイト・ハンター",
+   desc:"顧客が言葉にできない「本当の欲しいもの」を掘り起こし、刺さる商品とメッセージを設計する",
+   placeholder:"あなたの商品・サービス、ターゲット顧客、「なぜ売れない／なぜ刺さらない」という悩みを教えてください",
+   system:`あなたはケロッグ経営大学院のマーケティング教授であり、Jobs-to-be-Done理論、カスタマージャーニーマッピング、STPフレームワークを統合して「顧客が本当に欲しいもの」を言語化する専門家です。最初の相談では以下の構造で日本語で回答してください：\n\n## 👤 理想顧客ペルソナ\nデモグラフィック・サイコグラフィック・行動パターンの詳細プロフィール\n\n## 🔧 Jobs-to-be-Done分析\n顧客が商品を「雇う」本当の理由（機能的・感情的・社会的ジョブ）\n\n## 😤 ペインポイント深掘り\n顧客が抱える問題の表層・中層・深層の3段階\n\n## 💎 バリュープロポジション\n「なぜあなたから買うのか」を一文で言い切るステートメント\n\n## 🎯 STPフレームワーク\nSegmentation・Targeting・Positioning\n\n## 🗺 カスタマージャーニーマップ\nAwareness→Consideration→Purchase→Loyalty→Advocacy\n\n## 💬 刺さるメッセージ\n各ジャーニーステージで使うべき言葉とフレーム\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"marketing",phase:"顧客・市場理解",icon:"📣",color:"#4A1A6B",accent:"#CE93D8",
+   title:"マーケティング戦略デザイナー",
+   desc:"集客・認知・販売チャネルを体系的に設計。予算ゼロでも機能するマーケティング戦略を構築する",
+   placeholder:"あなたの商品・サービス、現在のマーケティング活動、月間予算、最大の集客課題を教えてください",
+   system:`あなたはケロッグ経営大学院とHBSでマーケティング戦略を教える教授であり、Apple・Nike・Coca-Colaのような企業のマーケティング戦略を分析・設計してきたコンサルタントです。最初の相談では以下の構造で日本語で回答してください：\n\n## 📊 現状マーケティング診断\n現在の活動の強み・弱み・機会・脅威\n\n## 🎯 マーケティング戦略の核心\n誰に・何を・どのように伝えるかの一文戦略\n\n## 📦 4Pマーケティングミックス\nProduct・Price・Place・Promotionの最適設計\n\n## 📈 チャネル優先順位\n期待ROIでランク付けした獲得チャネルトップ5\n\n## 💰 予算配分シミュレーション\n月1万円・5万円・10万円・30万円の場合の最適配分\n\n## 📊 KPIダッシュボード\n毎週追跡すべき5つの指標と目標値の設定方法\n\n## 📅 90日マーケティングアクションプラン\n今すぐ始められる具体的な施策リスト\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"portfolio",phase:"商品・事業設計",icon:"♟️",color:"#3D2B00",accent:"#FFB74D",
+   title:"商品ポートフォリオ戦略家",
+   desc:"何を売り・何を捨て・何に投資すべきかを判断。BCG×SWOTで商品ラインナップを最適化する",
+   placeholder:"あなたの商品・サービスのラインナップ（収益・売れ行き・手間・市場の伸び）を教えてください",
+   system:`あなたはBCGのシニアパートナーとして製品ポートフォリオ戦略を専門とし、SWOT分析とバリューチェーン分析を統合してクライアントの商品ラインナップを最適化するコンサルタントです。最初の相談では以下の構造で日本語で回答してください：\n\n## 📊 BCGマトリックス分析\nスター・キャッシュカウ・クエスチョンマーク・ドッグの分類\n\n## ⚖️ SWOT×商品診断\n各商品の強み・弱み・機会・脅威の相互作用分析\n\n## 💎 バリューチェーン分析\nどの活動が価値を生み、どこでマージンが漏れているか\n\n## 💰 キャッシュフロー最適化\nキャッシュカウからスター・クエスチョンマークへの資金移動計画\n\n## 🗑 撤退・縮小候補\n今すぐやめるべき商品とその理由\n\n## 🚀 新商品開発優先度\n既存リソースで開発すべき次の商品候補\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"growth",phase:"商品・事業設計",icon:"🌏",color:"#003D4D",accent:"#4DD0E1",
+   title:"ビジネス拡大ナビゲーター",
+   desc:"次の市場・顧客・商品への拡大ルートを設計。Ansoffマトリックスで成長の最短経路を示す",
+   placeholder:"現在のビジネス規模・収益・強み、そして3年後に目指したい姿を教えてください",
+   system:`あなたはINSEADでグローバル成長戦略を教える教授であり、Ansoffマトリックスを軸に、最小リスクで最大成長を実現するルートを設計します。最初の相談では以下の構造で日本語で回答してください：\n\n## 📊 Ansoffマトリックス診断\n市場浸透・市場開発・商品開発・多角化の評価\n\n## 🏆 成長レバー優先順位\nインパクトと難易度で全成長戦略をランク付け\n\n## 👥 隣接顧客セグメント\n最小限の修正で取り込める新しい顧客グループ\n\n## 🤝 パートナーシップ戦略\n成長を加速させる提携・コラボレーションの機会\n\n## 💰 収益モデル拡張\nフロント商品→バックエンド→定期収益の設計\n\n## 📅 3年成長ロードマップ\nYear1・Year2・Year3の具体的なマイルストーン\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"storytelling",phase:"伝える・売るフェーズ",icon:"📊",color:"#002B4D",accent:"#FFA726",
+   title:"データ・ストーリーテラー",
+   desc:"数字・データ・バラバラな発見を、経営判断できる説得力あるストーリーに変換する",
+   placeholder:"伝えたいデータ・数字・発見・分析結果を貼り付けてください。誰に伝えるかも教えてください",
+   system:`あなたはウォートン・スクールの教授であり、バーバラ・ミントのピラミッド原則を駆使するコミュニケーションの専門家です。最初の相談では以下の構造で日本語で回答してください：\n\n## 🎯 メインメッセージ（一文）\nすべてのデータから導かれる最重要結論\n\n## 📐 SCQAフレームワーク\nSituation・Complication・Question・Answer\n\n## 🔺 ピラミッド構造\nメインメッセージを支える3つの論拠グループ\n\n## ✅ ロジックチェック\n水平・垂直のロジック確認\n\n## 📝 エグゼクティブサマリー\nSCQA構造を使った洗練された1段落\n\n## 🖥 スライド1の設計\nヘッドライン・サポートポイント・データハイライトの配置\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"pitch",phase:"伝える・売るフェーズ",icon:"🎤",color:"#1A0033",accent:"#E040FB",
+   title:"プレゼン・営業構造化コーチ",
+   desc:"ピッチ・提案・セールスを刺さる構造に組み立て。「なんとなく良さそう」を「今すぐ買いたい」に変える",
+   placeholder:"プレゼン・営業・提案の目的、相手（誰に・何を売る）、現在の構成や課題を教えてください",
+   system:`あなたはコロンビア・ビジネス・スクールで起業プレゼンと営業構造化を教える教授であり、ピラミッド原則・SPIN営業・ストーリーブランド理論を統合して、聴衆を動かすプレゼンと成約率を上げる営業構造を設計するコンサルタントです。最初の相談では以下の構造で日本語で回答してください：\n\n## 🎯 ピッチの核心メッセージ\n相手が「これが欲しい」と思う一文\n\n## 📐 SCQA構造での導入\nSituation→Complication→Question→Answerの冒頭\n\n## 🔺 ピラミッド型プレゼン構造\n結論→3つの根拠→サポートデータの完全設計\n\n## 💬 SPIN営業フレームワーク\nSituation→Problem→Implication→Need-payoffの質問設計\n\n## 🚧 よくある反論と切り返し\n「高い」「今じゃない」「他で検討」への応答スクリプト\n\n## ⚡ クロージングの設計\n「YES」を引き出す最後の一押しの設計\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"copywriting",phase:"伝える・売るフェーズ",icon:"✍️",color:"#1A1A00",accent:"#FFD600",
+   title:"セールスコピー・ライティングコーチ",
+   desc:"「だから何？」を突き詰めて読者を動かす文章に変える。note・SNS・LP・メールを売れる文章に磨く",
+   placeholder:"磨きたい文章（LP・note・SNS投稿・メール・商品説明など）を貼り付けてください",
+   system:`あなたは「だから何？」ストレステストを武器とする上級コピーライターであり、セールスライティングとコンテンツマーケティングの専門家です。最初の相談では以下の構造で日本語で回答してください：\n\n## 🔍 現状文章の診断\n強み・弱み・改善すべき箇所の具体的な指摘\n\n## ❓ 「だから何？」ストレステスト\n各主張に「だから何？」を3回問いかけて本当に伝えるべきことを掘り起こす\n\n## 🚩 弱い表現の検出と修正\n曖昧表現を具体的な表現に書き換え\n\n## ✍️ リライト案（完全版）\nターゲット読者の感情・欲求・恐怖を踏まえた書き直し\n\n## 🎯 ヘッドライン5案\n思わずクリックしたくなる見出しの候補\n\n## 💬 感情トリガーの活用\nFOMO・社会的証明・権威・希少性・ベネフィットの組み込み方\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"negotiation",phase:"伝える・売るフェーズ",icon:"🤝",color:"#003322",accent:"#66BB6A",
+   title:"交渉術マスター",
+   desc:"価格・条件・契約をWin-Winに着地させる。ハーバード交渉術で有利な合意を引き出す専門家",
+   placeholder:"交渉している内容、相手、理想の結果、妥協できるライン、困っていることを教えてください",
+   system:`あなたはハーバード・ロー・スクールの教授でハーバード交渉プロジェクトの主任研究員です。最初の相談では以下の構造で日本語で回答してください：\n\n## 🎯 利益 vs 立場の分析\n私が本当に望むもの（利益）と求めているもの（立場）の違い\n\n## 🏆 私のBATNA\n交渉合意の最良の代替案と強化方法\n\n## 🔍 相手のBATNA推定\n相手が去る場合のシナリオ\n\n## 📐 ZOPAの特定\n双方にとって合意が成立しうるゾーン\n\n## ⚓ アンカー戦略\n最初に提案するかどうかと具体的な数字\n\n## 📋 譲歩シーケンス\n何を・どの順序で・何と引き換えに譲るかの計画\n\n## 💬 逐語スクリプト\n開始・反論対応・クロージングの具体的なセリフ\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"operations",phase:"実行・組織フェーズ",icon:"⚙️",color:"#2D0000",accent:"#EF9A9A",
+   title:"業務フロー最適化エキスパート",
+   desc:"無駄を削り・ボトルネックを取り除き・利益率を上げる。トヨタ式×MIT流で業務を筋肉質にする",
+   placeholder:"あなたのビジネスの業務フロー、チーム構成、最も時間がかかること・ストレスになっていることを教えてください",
+   system:`あなたはMITスローン経営大学院の教授であり、トヨタ生産方式とリーン経営を企業に実装してきたオペレーション・コンサルタントです。最初の相談では以下の構造で日本語で回答してください：\n\n## 🗺 現状プロセスマッピング\n最初から最後まで全ステップを可視化\n\n## 🔍 ボトルネック特定\nスループットを最も制限している唯一の制約\n\n## 🗑 8つのムダの診断\n過剰生産・待ち時間・不良・動作・輸送・過剰加工・在庫・未活用の才能\n\n## 🔧 バリューチェーン分析\n価値を生む活動・価値を失う活動・マージンが漏れている箇所\n\n## 🤖 自動化・外注化の機会\n戦略的コントロールを失わずにコストを削減できる箇所\n\n## 📅 改善ロードマップ\n今週・今月・3ヶ月後に取るべき具体的な改善アクション\n\n続く質問には会話の流れに沿って深めてください。`},
+  {id:"leadership",phase:"実行・組織フェーズ",icon:"🎯",color:"#3D0000",accent:"#EF9A9A",
+   title:"チーム・マネジメント心理コーチ",
+   desc:"心理学×リーダーシップでチームを自走させる。ACT・NVC・コーチングでマネジャーとしての力を育てる",
+   placeholder:"あなたの役割・チームの規模・最大のマネジメント課題・なりたいリーダー像を教えてください",
+   system:`あなたはスタンフォード大学経営学大学院（GSB）の教授であり、ACT・NVC・コーチング心理学を統合したリーダーシップ開発の専門家です。最初の相談では以下の構造で日本語で回答してください：\n\n## 🪞 リーダーシップスタイル診断\n自然なリーダーシップ傾向と強み・盲点\n\n## 💬 コミュニケーション改善\nNVCを使った観察・感情・ニーズ・リクエストの4ステップ\n\n## 🧠 心理的安全性の構築\nACTの原則を使った環境づくり\n\n## 📋 委任の技術\n何を委任するか・品質を保ちながらコントロールを手放す方法\n\n## 🔥 個別モチベーション戦略\n異なるタイプへの動機づけ\n\n## ⚡ 対立解決フレームワーク\nチームの対立を生産的に解決するステップ\n\n## 📅 90日リーダーシップ成長計画\n今すぐ始められる具体的な行動と振り返りの仕組み\n\n続く質問には会話の流れに沿って深めてください。`},
+];
+
+const PHASES = [
+  {name:"戦略・設計",color:"#8B0000",accent:"#FF6B6B"},
+  {name:"顧客・市場理解",color:"#2E4A7A",accent:"#64B5F6"},
+  {name:"商品・事業設計",color:"#3D2B00",accent:"#FFB74D"},
+  {name:"伝える・売るフェーズ",color:"#1A0033",accent:"#E040FB"},
+  {name:"実行・組織フェーズ",color:"#2D0000",accent:"#EF9A9A"},
+];
+
+let currentExpert = null;
+let messages = [];
+let isLoading = false;
+
+function buildSelector() {
+  const grid = document.getElementById('expert-grid');
+  PHASES.forEach(phase => {
+    const section = document.createElement('div');
+    section.className = 'phase-section';
+    section.innerHTML = `
+      <div class="phase-header">
+        <div class="phase-line" style="background:${phase.color}66"></div>
+        <span class="phase-label" style="background:${phase.color}33;color:${phase.accent}">${phase.name}</span>
+        <div class="phase-line" style="background:${phase.color}66"></div>
+      </div>
+      <div class="cards-grid" id="grid-${phase.name}"></div>`;
+    grid.appendChild(section);
+
+    const cardsGrid = section.querySelector(`#grid-${phase.name}`);
+    EXPERTS.filter(e => e.phase === phase.name).forEach(expert => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.cssText = `--accent:${expert.accent}`;
+      card.style.setProperty('--after-bg', expert.accent);
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="card-icon" style="background:${expert.color}50;border:1px solid ${expert.accent}40">${expert.icon}</div>
+          <div>
+            <div class="card-title">${expert.title}</div>
+            <div class="card-desc">${expert.desc}</div>
+          </div>
+        </div>`;
+      card.style.setProperty('--card-accent', expert.accent);
+      card.querySelector('.card::after');
+      const style = document.createElement('style');
+      style.textContent = `.card-${expert.id}::after{background:${expert.accent}}`;
+      document.head.appendChild(style);
+      card.classList.add(`card-${expert.id}`);
+      card.onclick = () => selectExpert(expert.id);
+      cardsGrid.appendChild(card);
+    });
+  });
+}
+
+function selectExpert(id) {
+  currentExpert = EXPERTS.find(e => e.id === id);
+  messages = [];
+  document.getElementById('selector').classList.add('hidden');
+  document.getElementById('chat-view').classList.remove('hidden');
+  document.getElementById('back-btn').classList.remove('hidden');
+  document.getElementById('reset-btn').classList.add('hidden');
+  document.getElementById('header-title').textContent = currentExpert.title;
+  document.getElementById('header-sub').textContent = currentExpert.desc;
+
+  const welcomeIcon = document.getElementById('welcome-icon');
+  welcomeIcon.textContent = currentExpert.icon;
+  welcomeIcon.style.cssText = `width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;background:${currentExpert.color}40;border:2px solid ${currentExpert.accent}50`;
+
+  document.getElementById('welcome-title').textContent = currentExpert.title;
+  document.getElementById('welcome-desc').textContent = currentExpert.desc;
+  document.getElementById('welcome').classList.remove('hidden');
+
+  const input = document.getElementById('input-text');
+  input.placeholder = currentExpert.placeholder;
+  input.focus();
+
+  document.getElementById('send-btn').style.background = `linear-gradient(135deg,${currentExpert.color}CC,${currentExpert.accent}AA)`;
+}
+
+function showSelector() {
+  currentExpert = null;
+  messages = [];
+  document.getElementById('selector').classList.remove('hidden');
+  document.getElementById('chat-view').classList.add('hidden');
+  document.getElementById('back-btn').classList.add('hidden');
+  document.getElementById('reset-btn').classList.add('hidden');
+  document.getElementById('header-title').textContent = 'MBA Expert Council';
+  document.getElementById('header-sub').textContent = 'ビジネスの課題を世界トップの専門家13名が解決する';
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('welcome').classList.remove('hidden');
+  document.getElementById('messages').appendChild(document.getElementById('welcome'));
+  document.getElementById('input-counter').classList.add('hidden');
+  document.getElementById('error-box').classList.add('hidden');
+}
+
+function resetChat() {
+  messages = [];
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('welcome').classList.remove('hidden');
+  document.getElementById('messages').appendChild(document.getElementById('welcome'));
+  document.getElementById('reset-btn').classList.add('hidden');
+  document.getElementById('input-counter').classList.add('hidden');
+  document.getElementById('error-box').classList.add('hidden');
+}
+
+function renderMessage(role, content) {
+  const messagesDiv = document.getElementById('messages');
+  const welcome = document.getElementById('welcome');
+  if (!welcome.classList.contains('hidden')) welcome.classList.add('hidden');
+
+  const div = document.createElement('div');
+  div.className = 'fade-up';
+
+  if (role === 'user') {
+    div.innerHTML = `<div class="msg-user"><div class="bubble-user">${escapeHtml(content)}</div></div>`;
+  } else {
+    const aiIconStyle = `background:${currentExpert.color}35;border:1px solid ${currentExpert.accent}35`;
+    div.innerHTML = `
+      <div class="msg-ai">
+        <div class="ai-icon" style="${aiIconStyle}">${currentExpert.icon}</div>
+        <div class="bubble-ai" style="border-top:2px solid ${currentExpert.accent}60">${formatAI(content)}</div>
+      </div>`;
+  }
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function formatAI(text) {
+  const lines = text.split('\n');
+  let html = '';
+  lines.forEach(line => {
+    if (line.startsWith('## ')) {
+      html += `<h2 style="color:${currentExpert.accent};border-bottom-color:${currentExpert.accent}44">${escapeHtml(line.slice(3))}</h2>`;
+    } else if (line.startsWith('- ')) {
+      html += `<div class="bullet"><span class="bullet-arrow" style="color:${currentExpert.accent}">▸</span><span>${escapeHtml(line.slice(2))}</span></div>`;
+    } else if (line.startsWith('**') && line.endsWith('**') && line.length > 4) {
+      html += `<strong style="display:block;color:#EEE;margin:.3rem 0 .1rem">${escapeHtml(line.slice(2,-2))}</strong>`;
+    } else if (line === '') {
+      html += '<div style="height:.25rem"></div>';
+    } else {
+      html += `<p>${escapeHtml(line)}</p>`;
+    }
+  });
+  return html;
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function sendMessage() {
+  const input = document.getElementById('input-text');
+  const text = input.value.trim();
+  if (!text || !currentExpert || isLoading) return;
+
+  isLoading = true;
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('error-box').classList.add('hidden');
+
+  messages.push({role:'user', content: text});
+  renderMessage('user', text);
+
+  document.getElementById('reset-btn').classList.remove('hidden');
+  const counter = document.getElementById('input-counter');
+  counter.classList.remove('hidden');
+  counter.textContent = `${currentExpert.title} · ${Math.ceil(messages.length/2)} 回のやりとり · 続けて質問できます`;
+
+  // Typing indicator
+  const messagesDiv = document.getElementById('messages');
+  const typing = document.createElement('div');
+  typing.id = 'typing-indicator';
+  typing.className = 'msg-ai fade-up';
+  typing.innerHTML = `
+    <div class="ai-icon" style="background:${currentExpert.color}35;border:1px solid ${currentExpert.accent}35">${currentExpert.icon}</div>
+    <div class="typing" style="color:${currentExpert.accent}">
+      <div class="dot" style="background:${currentExpert.accent}"></div>
+      <div class="dot" style="background:${currentExpert.accent}"></div>
+      <div class="dot" style="background:${currentExpert.accent}"></div>
+    </div>`;
+  messagesDiv.appendChild(typing);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'x-api-key': API_KEY,
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 4000,
+        system: currentExpert.system,
+        messages: messages,
+      }),
+    });
+
+    const data = await res.json();
+    typing.remove();
+
+    if (!res.ok) {
+      showError(`エラー (${res.status}): ${data?.error?.message || JSON.stringify(data).slice(0,200)}`);
+    } else {
+      const reply = data?.content?.[0]?.text;
+      if (reply) {
+        messages.push({role:'assistant', content: reply});
+        renderMessage('assistant', reply);
+      } else {
+        showError('レスポンスが空でした');
+      }
+    }
+  } catch(e) {
+    typing.remove();
+    showError('ネットワークエラー: ' + e.message);
+  }
+
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+  input.focus();
+}
+
+function showError(msg) {
+  const err = document.getElementById('error-box');
+  err.textContent = '⚠️ ' + msg;
+  err.classList.remove('hidden');
+}
+
+document.getElementById('input-text').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 110) + 'px';
+  document.getElementById('send-btn').disabled = !this.value.trim() || isLoading;
+});
+
+document.getElementById('input-text').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+buildSelector();
+</script>
+</body>
+</html>
